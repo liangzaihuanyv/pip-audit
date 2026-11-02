@@ -17,6 +17,12 @@ All versions prior to 0.0.9 are untracked.
 * Deduplicate vulnerability results that share the same PYSEC identifier.
   ([#1068](https://github.com/pypa/pip-audit/issues/1068))
 
+* OSV records that describe a package with multiple `ECOSYSTEM` ranges or with
+  more than one matching `affected` entry now report every fixed version
+  instead of discarding all but one range's fixes. Previously, `--fix` could
+  fail to find a fix version when the installed version was covered by a range
+  that was not the one retained.
+
 ## [2.10.1]
 
 ### Fixed

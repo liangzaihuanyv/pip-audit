@@ -132,22 +132,22 @@ class OsvService(VulnerabilityService):
                 pkg = affected["package"]
                 # We only care about PyPI versions
                 if pkg["name"] == spec.canonical_name and pkg["ecosystem"] == "PyPI":
+                    # A record may describe the same package in more than one affected
+                    # entry, and each entry may carry more than one range. Every
+                    # ECOSYSTEM range applies, so collect all of them instead of
+                    # stopping at the first one.
                     for ranges in affected.get("ranges", []):
                         if ranges["type"] == "ECOSYSTEM":
-                            # Filter out non-fix versions
-                            fix_version_strs = [
-                                version["fixed"]
+                            # Filter out non-fix versions and convert them to version objects
+                            fix_versions.extend(
+                                Version(version["fixed"])
                                 for version in ranges["events"]
                                 if "fixed" in version
-                            ]
-                            # Convert them to version objects
-                            fix_versions = [
-                                Version(version_str) for version_str in fix_version_strs
-                            ]
-                            break
+                            )
 
-            # The ranges aren't guaranteed to come in chronological order
-            fix_versions.sort()
+            # The ranges aren't guaranteed to come in chronological order, and the
+            # same fix version may appear in multiple ranges or affected entries.
+            fix_versions = sorted(set(fix_versions))
 
             results.append(
                 VulnerabilityResult.create(
